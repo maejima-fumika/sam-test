@@ -1,42 +1,35 @@
 import json
-
-# import requests
+import boto3
+from hello_world import Taskdb
+from decimal import Decimal
+import os
 
 
 def lambda_handler(event, context):
-    """Sample pure Lambda function
+    endpoint_url = os.environ["DYNAMODB_ENDPOINT"]
+    table_name = os.environ["DYNAMODB_TABLE"]
 
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
+    dynamodb = boto3.resource('dynamodb', endpoint_url=endpoint_url)
+    taskdb = Taskdb.Taskdb(dynamodb, table_name)
 
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+    body = json.loads(event["body"])
 
-    context: object, required
-        Lambda Context runtime methods and attributes
+    try:
+        method = body["method"]
+        item = body["item"]
+    except:
+        return {
+            'statusCode': 400,
+            'body': json.dumps({"message": "required key does not exist"}),
+        }
 
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
-
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
-
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
-
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
-
-    #     raise e
-
+    statusCode, response = taskdb.execute_method(method, item)
     return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "hello world",
-            # "location": ip.text.replace("\n", "")
-        }),
+        'statusCode': statusCode,
+        'body': json.dumps(response, default=decimal_to_int),
     }
+
+
+def decimal_to_int(obj):
+    if isinstance(obj, Decimal):
+        return int(obj)

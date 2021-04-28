@@ -1,0 +1,6 @@
+{
+    "HelloWorldFunction": {
+        "DYNAMODB_ENDPOINT": "http://10.81.147.31:8000",
+        "DYNAMODB_TABLE":"Task"
+    }
+}
