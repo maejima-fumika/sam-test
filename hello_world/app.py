@@ -1,11 +1,8 @@
 import json
 import boto3
-import Taskdb  # apigwと一緒だとこっち
-# from . import Taskdb  ##lambda単体ではこっち なぜなのだろう
+from hello_world import Taskdb
 from decimal import Decimal
 import os
-
-# import requests
 
 
 def lambda_handler(event, context):
