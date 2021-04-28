@@ -1,16 +1,15 @@
 import json
-
 import pytest
-
 from hello_world import app
 
 
 @pytest.fixture()
 def apigw_event():
     """ Generates API GW Event"""
-    def _event(method, body):
+    def _event(method, item):
+        request_body = json.dumps({"method": method, "item": item})
         return {
-            "body": {"method": method, "item": body},
+            "body": request_body,
             "resource": "/{proxy+}",
             "requestContext": {
                 "resourceId": "123456",

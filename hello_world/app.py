@@ -1,49 +1,25 @@
 import json
 import boto3
-from . import Taskdb
+import Taskdb  # apigwと一緒だとこっち
+# from . import Taskdb  ##lambda単体ではこっち なぜなのだろう
 from decimal import Decimal
+import os
 
 # import requests
 
 
 def lambda_handler(event, context):
-    """Sample pure Lambda function
-
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
-
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
-
-    context: object, required
-        Lambda Context runtime methods and attributes
-
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
-
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
-
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
-
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
-
-    #     raise e
-    endpoint_url = "http://localhost:8000"
-    table_name = "Task"
+    endpoint_url = os.environ["DYNAMODB_ENDPOINT"]
+    table_name = os.environ["DYNAMODB_TABLE"]
 
     dynamodb = boto3.resource('dynamodb', endpoint_url=endpoint_url)
     taskdb = Taskdb.Taskdb(dynamodb, table_name)
 
+    body = json.loads(event["body"])
+
     try:
-        method = event["body"]["method"]
-        item = event["body"]["item"]
+        method = body["method"]
+        item = body["item"]
     except:
         return {
             'statusCode': 400,
