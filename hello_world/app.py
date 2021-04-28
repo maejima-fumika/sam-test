@@ -1,4 +1,7 @@
 import json
+import boto3
+from . import Taskdb
+from decimal import Decimal
 
 # import requests
 
@@ -32,11 +35,28 @@ def lambda_handler(event, context):
     #     print(e)
 
     #     raise e
+    endpoint_url = "http://localhost:8000"
+    table_name = "Task"
 
+    dynamodb = boto3.resource('dynamodb', endpoint_url=endpoint_url)
+    taskdb = Taskdb.Taskdb(dynamodb, table_name)
+
+    try:
+        method = event["body"]["method"]
+        item = event["body"]["item"]
+    except:
+        return {
+            'statusCode': 400,
+            'body': json.dumps({"message": "required key does not exist"}),
+        }
+
+    statusCode, response = taskdb.execute_method(method, item)
     return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "hello world",
-            # "location": ip.text.replace("\n", "")
-        }),
+        'statusCode': statusCode,
+        'body': json.dumps(response, default=decimal_to_int),
     }
+
+
+def decimal_to_int(obj):
+    if isinstance(obj, Decimal):
+        return int(obj)
